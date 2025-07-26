@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     setMessage("");
     try {
       const token = await getToken();
-      const response = await axios.get(`${backendUrl}/admin/kyc/pending`, {
+      const response = await axios.get(`${backendUrl}/api/admin/kyc/pending`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPendingKycs(response.data);
@@ -41,7 +41,7 @@ const AdminDashboard = () => {
     try {
       const token = await getToken();
       const response = await axios.put(
-        `${backendUrl}/admin/kyc/${kycId}/review`,
+        `${backendUrl}/api/admin/kyc/${kycId}/review`,
         { status },
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -1,13 +1,10 @@
 // backend/routes/kycRoutes.js
 import express from "express";
 const router = express.Router();
-import {
-  submitKyc,
-  getKycApplication,
-  getAllPendingKyc,
-  reviewKyc,
-} from "../controllers/kycController.js"; // Ensure these are named exports
+import { submitKyc, getKycApplication } from "../controllers/kycController.js"; // Ensure these are named exports
 import upload from "../middlewares/upload.js";
+import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node"; // Import Clerk auth
+import { requireAuth } from "../middlewares/authMiddleware.js";
 
 router.post(
   "/submit",
@@ -18,8 +15,12 @@ router.post(
   ]),
   submitKyc
 );
+router.get(
+  "/", // Changed from "/kyc" to "/" because it will be mounted under "/api/kyc"
+  ClerkExpressRequireAuth(), // Add Clerk's auth middleware
+  requireAuth, // Add your custom auth middleware
+  getKycApplication
+);
 router.get("/kyc", getKycApplication);
-router.get("/admin/kyc/pending", getAllPendingKyc);
-router.put("/admin/kyc/:id/review", reviewKyc);
 
 export default router;

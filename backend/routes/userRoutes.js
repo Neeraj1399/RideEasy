@@ -3,7 +3,6 @@ import express from "express";
 import {
   getProfile,
   createOrUpdateUser,
-  updateUserRoleAndKycStatus,
   applyAsDriver,
   submitKycDetails,
   // Removed 'upload' from here, as it's now imported from middlewares/upload.js
@@ -46,13 +45,6 @@ router.post(
   submitKycDetails
 );
 
-// Admin Routes
-router.put(
-  "/admin/update-user/:id",
-  ClerkExpressRequireAuth(),
-  requireAuth,
-  updateUserRoleAndKycStatus
-);
 // ...
 
 export default router;

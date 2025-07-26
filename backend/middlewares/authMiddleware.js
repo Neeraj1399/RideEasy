@@ -14,11 +14,9 @@ export const requireAuth = async (req, res, next) => {
     console.error(
       "Auth Middleware (simplified): req.auth or userId missing unexpectedly."
     );
-    return res
-      .status(401)
-      .json({
-        message: "Unauthorized: Clerk authentication failed or missing.",
-      });
+    return res.status(401).json({
+      message: "Unauthorized: Clerk authentication failed or missing.",
+    });
   }
 
   const clerkUserId = req.auth.userId;
@@ -82,15 +80,22 @@ export const requireAuth = async (req, res, next) => {
   }
 };
 
-// New Middleware: Checks if the authenticated user has an 'admin' role
-export const adminAuth = (req, res, next) => {
-  // req.user should be populated by the preceding requireAuth middleware
-  if (req.user && req.user.role === "admin") {
-    next(); // User is an admin, proceed to the next handler
-  } else {
-    // If user is not authenticated or not an admin
-    res
-      .status(403)
-      .json({ message: "Access denied. Admin privileges required." });
-  }
+export const authorizeRoles = (roles) => {
+  return (req, res, next) => {
+    // req.user should be populated by the preceding requireAuth middleware
+    if (!req.user || !req.user.role) {
+      return res
+        .status(403)
+        .json({ message: "Access denied. User role not found." });
+    }
+    // Check if the user's role is included in the allowed roles
+    if (!roles.includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({
+          message: `Access denied. Role "${req.user.role}" is not authorized for this action.`,
+        });
+    }
+    next(); // User is authorized, proceed
+  };
 };

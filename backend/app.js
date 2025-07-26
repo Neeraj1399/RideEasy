@@ -15,7 +15,7 @@ import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 import userRoutes from "./routes/userRoutes.js";
 import kycRoutes from "./routes/kycRoutes.js";
 import rideRoutes from "./routes/rideRoutes.js";
-
+import adminRoutes from "./routes/adminRoutes.js";
 const app = express();
 
 // Define CORS options
@@ -39,7 +39,7 @@ app.use("/api", ClerkExpressRequireAuth());
 app.use("/api/user", userRoutes);
 app.use("/api/kyc", kycRoutes);
 app.use("/api/rides", rideRoutes);
-
+app.use("/api/admin", adminRoutes);
 // Basic route for testing
 app.get("/", (req, res) => {
   res.send("API is running...");

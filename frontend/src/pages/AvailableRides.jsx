@@ -17,7 +17,7 @@ const AvailableRides = () => {
     const fetchRides = async () => {
       try {
         const token = await getToken();
-        const response = await axios.get(`${backendUrl}/rides`, {
+        const response = await axios.get(`${backendUrl}/api/rides`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRides(response.data);
