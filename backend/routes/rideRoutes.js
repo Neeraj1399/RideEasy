@@ -9,36 +9,51 @@ import {
   deleteRide,
   joinRide,
   getDriverRides,
+  updatePassengerStatus, // Assuming you have this in your controller
+  getCustomerJoinedRides, // Assuming you have this in your controller
+  cancelJoinRequest, // Assuming you have this in your controller
 } from "../controllers/rideController.js";
 
-// You should also include your authentication/authorization middleware here
-// For example:
-// import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
-// import { requireAuth, authorizeRoles } from "../middlewares/authMiddleware.js";
+// Import your authentication/authorization middleware
+import { requireAuth, authorizeRoles } from "../middlewares/authMiddleware.js"; // Adjust path if different
 
-// Driver routes (assuming these need authentication and perhaps driver role)
-// These routes will be accessed via /api/rides/create, /api/rides/:id, /api/rides/driver etc.
-router.post(
-  "/",
-  /* ClerkExpressRequireAuth(), requireAuth, authorizeRoles(['driver']), */ createRide
-); // Changed from /rides to /
+// Public routes (e.g., viewing rides - often allowed for unauthenticated users)
+router.get("/", getAvailableRides); // Get all available rides
+
+// Apply `requireAuth` middleware to all routes below this line
+// This means a user MUST be authenticated (logged in via Clerk) to access them.
+// The `requireAuth` middleware will populate `req.user` with the Mongoose user document.
+router.use(requireAuth); // ALL routes below this require authentication
+
+// Protected general ride routes (now requiring authentication)
+router.get("/:id", getRideById); // Get a single ride by ID (now requires auth)
+
+// Driver specific routes
+// These also require the 'driver' role
+router.post("/", authorizeRoles(["driver"]), createRide); // Create a new ride
+router.put("/:id", authorizeRoles(["driver"]), editRide); // Edit a specific ride by ID
+router.delete("/:id", authorizeRoles(["driver"]), deleteRide); // Delete a specific ride by ID
+router.get("/driver/my-rides", authorizeRoles(["driver"]), getDriverRides); // Get rides created by the logged-in driver
+
+// Driver actions on passenger requests
 router.put(
-  "/:id",
-  /* ClerkExpressRequireAuth(), requireAuth, authorizeRoles(['driver']), */ editRide
-); // Changed from /rides/:id to /:id
-router.delete(
-  "/:id",
-  /* ClerkExpressRequireAuth(), requireAuth, authorizeRoles(['driver']), */ deleteRide
-); // Changed from /rides/:id to /:id
-router.get(
-  "/driver",
-  /* ClerkExpressRequireAuth(), requireAuth, authorizeRoles(['driver']), */ getDriverRides
-); // Changed from /rides/driver to /driver
+  "/:rideId/passengers/:passengerId",
+  authorizeRoles(["driver"]),
+  updatePassengerStatus
+);
 
-// Customer/General routes
-// These routes will be accessed via /api/rides/ (for available rides), /api/rides/:id, /api/rides/:id/join etc.
-router.get("/", getAvailableRides); // Changed from /rides to /
-router.get("/:id", getRideById); // Changed from /rides/:id to /:id
-router.post("/:id/join", joinRide); // Changed from /rides/:id/join to /:id/join
+// Customer specific routes
+// These require the 'customer' role
+router.post("/:id/join", authorizeRoles(["customer"]), joinRide); // Join a ride
+router.get(
+  "/customer/my-joined-rides",
+  authorizeRoles(["customer"]),
+  getCustomerJoinedRides
+); // Get rides joined by the logged-in customer
+router.delete(
+  "/:rideId/cancel-join",
+  authorizeRoles(["customer"]),
+  cancelJoinRequest
+); // Customer cancels their join request
 
 export default router;

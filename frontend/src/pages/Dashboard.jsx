@@ -2,38 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+// import axios from "axios";
+import DriverRides from "./DriverRides"; // Import the DriverRides component
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+// const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const Dashboard = ({ userRole, kycStatus }) => {
   const { user: clerkUser } = useUser();
-  const { getToken } = useAuth();
-  const [driverRides, setDriverRides] = useState([]);
-  const [loadingRides, setLoadingRides] = useState(false);
-  const [errorRides, setErrorRides] = useState(null);
-
-  useEffect(() => {
-    const fetchDriverRides = async () => {
-      if (userRole === "driver" && kycStatus === "approved") {
-        setLoadingRides(true);
-        try {
-          const token = await getToken();
-          const response = await axios.get(`${backendUrl}/rides/driver`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setDriverRides(response.data);
-        } catch (error) {
-          console.error("Error fetching driver rides:", error);
-          setErrorRides("Failed to fetch your rides.");
-        } finally {
-          setLoadingRides(false);
-        }
-      }
-    };
-
-    fetchDriverRides();
-  }, [userRole, kycStatus, getToken]);
+  // const { getToken } = useAuth();
 
   if (!clerkUser) {
     return <div>Loading user data...</div>;
@@ -71,10 +47,16 @@ const Dashboard = ({ userRole, kycStatus }) => {
         <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-4">Customer Actions</h2>
           <Link
-            to="/rides/available"
+            to="/available-rides" // Removed the comment here
             className="bg-blue-500 text-white px-5 py-2 rounded-md hover:bg-blue-600"
           >
             Find Available Rides
+          </Link>
+          <Link
+            to="/my-joined-rides" // Removed the comment here
+            className="bg-purple-500 text-white px-5 py-2 rounded-md hover:bg-purple-600 ml-4"
+          >
+            My Joined Rides
           </Link>
           {kycStatus !== "approved" && (
             <p className="mt-4 text-gray-600">
@@ -90,47 +72,14 @@ const Dashboard = ({ userRole, kycStatus }) => {
           {kycStatus === "approved" ? (
             <>
               <Link
-                to="/rides/create"
+                to="/create-ride" // Removed the comment here
                 className="bg-green-500 text-white px-5 py-2 rounded-md hover:bg-green-600 mr-4"
               >
                 Create a New Ride
               </Link>
-              <h3 className="text-xl font-semibold mt-6 mb-3">Your Rides</h3>
-              {loadingRides && <p>Loading your rides...</p>}
-              {errorRides && <p className="text-red-500">{errorRides}</p>}
-              {!loadingRides && driverRides.length === 0 && (
-                <p>You haven't created any rides yet.</p>
-              )}
-              {!loadingRides && driverRides.length > 0 && (
-                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {driverRides.map((ride) => (
-                    <li
-                      key={ride._id}
-                      className="bg-white p-4 rounded-lg shadow-md"
-                    >
-                      <h4 className="font-bold text-lg">
-                        {ride.origin} to {ride.destination}
-                      </h4>
-                      <p>Vehicle: {ride.vehicleType}</p>
-                      <p>Space: {ride.availableSpace}</p>
-                      <p>Price: ${ride.price}</p>
-                      <p>
-                        Status:{" "}
-                        <span className="capitalize">{ride.status}</span>
-                      </p>
-                      <div className="mt-2 flex space-x-2">
-                        <Link
-                          to={`/rides/edit/${ride._id}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          Edit
-                        </Link>
-                        {/* Implement delete functionality here */}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <div className="mt-6">
+                <DriverRides />
+              </div>
             </>
           ) : (
             <p className="text-red-600">

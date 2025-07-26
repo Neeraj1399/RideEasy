@@ -12,13 +12,21 @@ const RideSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    originCoords: {
+      lat: { type: Number, required: true },
+      lon: { type: Number, required: true },
+    },
     destination: {
       type: String,
       required: true,
     },
+    destinationCoords: {
+      lat: { type: Number, required: true },
+      lon: { type: Number, required: true },
+    },
     vehicleType: {
       type: String,
-      enum: ["two-wheeler", "truck", "car"],
+      enum: ["two-wheeler", "truck", "car"], // Ensure these match your frontend options
       required: true,
     },
     availableSpace: {
@@ -31,20 +39,38 @@ const RideSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
+    distanceKm: {
+      // <-- THIS IS THE NEW FIELD
+      type: Number,
+      required: true, // It's required since it's used for fare calculation
+      min: 0,
+    },
     passengers: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "rejected"],
+          default: "pending",
+        },
       },
     ],
     status: {
       type: String,
-      enum: ["active", "completed", "cancelled"],
-      default: "active",
+      enum: ["scheduled", "active", "completed", "cancelled"],
+      default: "scheduled",
+    },
+    departureTime: {
+      type: Date,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const Ride = mongoose.model("Ride", RideSchema);
-export default Ride; // <-- Ensure this is 'export default Ride;'
+export default Ride;
